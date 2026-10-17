@@ -4,90 +4,124 @@ import {
   CircleCheckBig,
   Send,
 } from "lucide-react";
+import { useState } from "react";
+import ApplicationForm from "../components/applications/ApplicationForm";
 import RecentApplications from "../components/dashboard/RecentApplications";
 import StatCard from "../components/dashboard/StatCard";
-import { mockApplications } from "../data/mockApplications";
+import Modal from "../components/ui/Modal";
+import { useApplications } from "../hooks/useApplications";
+import type { JobApplication } from "../types/application";
 
 function DashboardPage() {
-  const totalApplications = mockApplications.length;
+  const { applications, addApplication } = useApplications();
+  const [isFormOpen, setIsFormOpen] = useState(false);
 
-  const appliedApplications = mockApplications.filter(
+  const activeApplications = applications.filter(
     (application) =>
       application.status !== "saved" &&
       application.status !== "rejected",
   ).length;
 
-  const interviews = mockApplications.filter(
+  const interviews = applications.filter(
     (application) => application.status === "interview",
   ).length;
 
-  const offers = mockApplications.filter(
+  const offers = applications.filter(
     (application) => application.status === "offer",
   ).length;
 
-  return (
-    <div className="mx-auto max-w-7xl">
-      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-        <div>
-          <h1 className="text-2xl font-bold tracking-tight text-slate-900">
-            Dashboard
-          </h1>
+  const recentApplications = applications.slice(0, 5);
 
-          <p className="mt-1 text-sm text-slate-600">
-            Track your job-search progress from one place.
-          </p>
+  function handleAddApplication(
+    application: JobApplication,
+  ) {
+    addApplication(application);
+    setIsFormOpen(false);
+  }
+
+  return (
+    <>
+      <div className="mx-auto max-w-7xl">
+        <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+          <div>
+            <h1 className="text-2xl font-bold tracking-tight text-slate-900">
+              Dashboard
+            </h1>
+
+            <p className="mt-1 text-sm text-slate-600">
+              Track your job-search progress from one place.
+            </p>
+          </div>
+
+          <button
+            type="button"
+            onClick={() => setIsFormOpen(true)}
+            className="inline-flex items-center justify-center gap-2 rounded-lg bg-blue-600 px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+          >
+            <BriefcaseBusiness
+              aria-hidden="true"
+              className="h-4 w-4"
+            />
+            Add application
+          </button>
         </div>
 
-        <button
-          type="button"
-          className="inline-flex items-center justify-center gap-2 rounded-lg bg-blue-600 px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+        <section
+          aria-label="Application statistics"
+          className="mt-6 grid gap-4 sm:grid-cols-2 xl:grid-cols-4"
         >
-          <BriefcaseBusiness aria-hidden="true" className="h-4 w-4" />
-          Add application
-        </button>
+          <StatCard
+            title="Total applications"
+            value={applications.length}
+            description="All tracked opportunities"
+            icon={BriefcaseBusiness}
+            iconClassName="bg-slate-100 text-slate-700"
+          />
+
+          <StatCard
+            title="Active applications"
+            value={activeApplications}
+            description="Currently in progress"
+            icon={Send}
+            iconClassName="bg-blue-100 text-blue-700"
+          />
+
+          <StatCard
+            title="Interviews"
+            value={interviews}
+            description="Interview stage reached"
+            icon={CalendarCheck}
+            iconClassName="bg-purple-100 text-purple-700"
+          />
+
+          <StatCard
+            title="Offers"
+            value={offers}
+            description="Offers received"
+            icon={CircleCheckBig}
+            iconClassName="bg-emerald-100 text-emerald-700"
+          />
+        </section>
+
+        <div className="mt-6">
+          <RecentApplications
+            applications={recentApplications}
+          />
+        </div>
       </div>
 
-      <section
-        aria-label="Application statistics"
-        className="mt-6 grid gap-4 sm:grid-cols-2 xl:grid-cols-4"
+      <Modal
+        isOpen={isFormOpen}
+        title="Add application"
+        description="Record a new job opportunity in your tracker."
+        onClose={() => setIsFormOpen(false)}
       >
-        <StatCard
-          title="Total applications"
-          value={totalApplications}
-          description="All tracked opportunities"
-          icon={BriefcaseBusiness}
-          iconClassName="bg-slate-100 text-slate-700"
+        <ApplicationForm
+          onSubmit={handleAddApplication}
+          onCancel={() => setIsFormOpen(false)}
         />
-
-        <StatCard
-          title="Active applications"
-          value={appliedApplications}
-          description="Currently in progress"
-          icon={Send}
-          iconClassName="bg-blue-100 text-blue-700"
-        />
-
-        <StatCard
-          title="Interviews"
-          value={interviews}
-          description="Interview stage reached"
-          icon={CalendarCheck}
-          iconClassName="bg-purple-100 text-purple-700"
-        />
-
-        <StatCard
-          title="Offers"
-          value={offers}
-          description="Offers received"
-          icon={CircleCheckBig}
-          iconClassName="bg-emerald-100 text-emerald-700"
-        />
-      </section>
-
-      <div className="mt-6">
-        <RecentApplications applications={mockApplications} />
-      </div>
-    </div>
+      </Modal>
+    </>
   );
 }
 

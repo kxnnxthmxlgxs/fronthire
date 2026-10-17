@@ -3,18 +3,26 @@ import { useMemo, useState } from "react";
 import ApplicationFilters, {
   type StatusFilter,
 } from "../components/applications/ApplicationFilters";
+import ApplicationForm from "../components/applications/ApplicationForm";
 import ApplicationTable from "../components/applications/ApplicationTable";
-import { mockApplications } from "../data/mockApplications";
+import Modal from "../components/ui/Modal";
+import { useApplications } from "../hooks/useApplications";
+import type { JobApplication } from "../types/application";
 
 function ApplicationsPage() {
+  const { applications, addApplication } = useApplications();
+
   const [searchTerm, setSearchTerm] = useState("");
+
   const [statusFilter, setStatusFilter] =
     useState<StatusFilter>("all");
+
+  const [isFormOpen, setIsFormOpen] = useState(false);
 
   const filteredApplications = useMemo(() => {
     const normalizedSearch = searchTerm.trim().toLowerCase();
 
-    return mockApplications.filter((application) => {
+    return applications.filter((application) => {
       const matchesSearch =
         normalizedSearch === "" ||
         application.company
@@ -33,70 +41,92 @@ function ApplicationsPage() {
 
       return matchesSearch && matchesStatus;
     });
-  }, [searchTerm, statusFilter]);
+  }, [applications, searchTerm, statusFilter]);
+
+  function handleAddApplication(
+    application: JobApplication,
+  ) {
+    addApplication(application);
+    setIsFormOpen(false);
+  }
 
   return (
-    <div className="mx-auto max-w-7xl">
-      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-        <div>
-          <h1 className="text-2xl font-bold tracking-tight text-slate-900">
-            Applications
-          </h1>
+    <>
+      <div className="mx-auto max-w-7xl">
+        <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+          <div>
+            <h1 className="text-2xl font-bold tracking-tight text-slate-900">
+              Applications
+            </h1>
 
-          <p className="mt-1 text-sm text-slate-600">
-            Manage and track all your job applications.
-          </p>
+            <p className="mt-1 text-sm text-slate-600">
+              Manage and track all your job applications.
+            </p>
+          </div>
+
+          <button
+            type="button"
+            onClick={() => setIsFormOpen(true)}
+            className="inline-flex items-center justify-center gap-2 rounded-lg bg-blue-600 px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+          >
+            <Plus aria-hidden="true" className="h-4 w-4" />
+            Add application
+          </button>
         </div>
 
-        <button
-          type="button"
-          className="inline-flex items-center justify-center gap-2 rounded-lg bg-blue-600 px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
-        >
-          <Plus aria-hidden="true" className="h-4 w-4" />
-          Add application
-        </button>
-      </div>
-
-      <div className="mt-6">
-        <ApplicationFilters
-          searchTerm={searchTerm}
-          statusFilter={statusFilter}
-          onSearchChange={setSearchTerm}
-          onStatusChange={setStatusFilter}
-        />
-      </div>
-
-      <div className="mt-4 flex items-center justify-between">
-        <p
-          aria-live="polite"
-          className="text-sm text-slate-600"
-        >
-          Showing{" "}
-          <span className="font-semibold text-slate-900">
-            {filteredApplications.length}
-          </span>{" "}
-          of{" "}
-          <span className="font-semibold text-slate-900">
-            {mockApplications.length}
-          </span>{" "}
-          applications
-        </p>
-
-        <div className="hidden items-center gap-2 text-sm text-slate-500 sm:flex">
-          <BriefcaseBusiness
-            aria-hidden="true"
-            className="h-4 w-4"
+        <div className="mt-6">
+          <ApplicationFilters
+            searchTerm={searchTerm}
+            statusFilter={statusFilter}
+            onSearchChange={setSearchTerm}
+            onStatusChange={setStatusFilter}
           />
-          Application tracker
+        </div>
+
+        <div className="mt-4 flex items-center justify-between">
+          <p
+            aria-live="polite"
+            className="text-sm text-slate-600"
+          >
+            Showing{" "}
+            <span className="font-semibold text-slate-900">
+              {filteredApplications.length}
+            </span>{" "}
+            of{" "}
+            <span className="font-semibold text-slate-900">
+              {applications.length}
+            </span>{" "}
+            applications
+          </p>
+
+          <div className="hidden items-center gap-2 text-sm text-slate-500 sm:flex">
+            <BriefcaseBusiness
+              aria-hidden="true"
+              className="h-4 w-4"
+            />
+            Application tracker
+          </div>
+        </div>
+
+        <div className="mt-4">
+          <ApplicationTable
+            applications={filteredApplications}
+          />
         </div>
       </div>
 
-      <div className="mt-4">
-        <ApplicationTable
-          applications={filteredApplications}
+      <Modal
+        isOpen={isFormOpen}
+        title="Add application"
+        description="Record a new job opportunity in your tracker."
+        onClose={() => setIsFormOpen(false)}
+      >
+        <ApplicationForm
+          onSubmit={handleAddApplication}
+          onCancel={() => setIsFormOpen(false)}
         />
-      </div>
-    </div>
+      </Modal>
+    </>
   );
 }
 
