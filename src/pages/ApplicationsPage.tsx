@@ -1,4 +1,4 @@
-import { BriefcaseBusiness, Plus } from "lucide-react";
+import { BriefcaseBusiness, Plus, TriangleAlert } from "lucide-react";
 import { useMemo, useState } from "react";
 import ApplicationFilters, {
   type StatusFilter,
@@ -10,14 +10,25 @@ import { useApplications } from "../hooks/useApplications";
 import type { JobApplication } from "../types/application";
 
 function ApplicationsPage() {
-  const { applications, addApplication } = useApplications();
+  const {
+    applications,
+    addApplication,
+    updateApplication,
+    deleteApplication,
+  } = useApplications();
 
   const [searchTerm, setSearchTerm] = useState("");
 
   const [statusFilter, setStatusFilter] =
     useState<StatusFilter>("all");
 
-  const [isFormOpen, setIsFormOpen] = useState(false);
+  const [isAddFormOpen, setIsAddFormOpen] = useState(false);
+
+  const [applicationToEdit, setApplicationToEdit] =
+    useState<JobApplication | null>(null);
+
+  const [applicationToDelete, setApplicationToDelete] =
+    useState<JobApplication | null>(null);
 
   const filteredApplications = useMemo(() => {
     const normalizedSearch = searchTerm.trim().toLowerCase();
@@ -47,7 +58,23 @@ function ApplicationsPage() {
     application: JobApplication,
   ) {
     addApplication(application);
-    setIsFormOpen(false);
+    setIsAddFormOpen(false);
+  }
+
+  function handleUpdateApplication(
+    application: JobApplication,
+  ) {
+    updateApplication(application);
+    setApplicationToEdit(null);
+  }
+
+  function handleConfirmDelete() {
+    if (!applicationToDelete) {
+      return;
+    }
+
+    deleteApplication(applicationToDelete.id);
+    setApplicationToDelete(null);
   }
 
   return (
@@ -66,7 +93,7 @@ function ApplicationsPage() {
 
           <button
             type="button"
-            onClick={() => setIsFormOpen(true)}
+            onClick={() => setIsAddFormOpen(true)}
             className="inline-flex items-center justify-center gap-2 rounded-lg bg-blue-600 px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
           >
             <Plus aria-hidden="true" className="h-4 w-4" />
@@ -111,20 +138,90 @@ function ApplicationsPage() {
         <div className="mt-4">
           <ApplicationTable
             applications={filteredApplications}
+            onEdit={setApplicationToEdit}
+            onDelete={setApplicationToDelete}
           />
         </div>
       </div>
 
       <Modal
-        isOpen={isFormOpen}
+        isOpen={isAddFormOpen}
         title="Add application"
         description="Record a new job opportunity in your tracker."
-        onClose={() => setIsFormOpen(false)}
+        onClose={() => setIsAddFormOpen(false)}
       >
         <ApplicationForm
           onSubmit={handleAddApplication}
-          onCancel={() => setIsFormOpen(false)}
+          onCancel={() => setIsAddFormOpen(false)}
         />
+      </Modal>
+
+      <Modal
+        isOpen={applicationToEdit !== null}
+        title="Edit application"
+        description="Update the details and current status of this application."
+        onClose={() => setApplicationToEdit(null)}
+      >
+        {applicationToEdit && (
+          <ApplicationForm
+            key={applicationToEdit.id}
+            initialApplication={applicationToEdit}
+            onSubmit={handleUpdateApplication}
+            onCancel={() => setApplicationToEdit(null)}
+          />
+        )}
+      </Modal>
+
+      <Modal
+        isOpen={applicationToDelete !== null}
+        title="Delete application"
+        description="This action cannot be undone."
+        onClose={() => setApplicationToDelete(null)}
+      >
+        {applicationToDelete && (
+          <div>
+            <div className="flex gap-4">
+              <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-red-100 text-red-600">
+                <TriangleAlert
+                  aria-hidden="true"
+                  className="h-5 w-5"
+                />
+              </div>
+
+              <div>
+                <h3 className="font-semibold text-slate-900">
+                  Delete {applicationToDelete.company}?
+                </h3>
+
+                <p className="mt-2 text-sm leading-6 text-slate-600">
+                  The application for{" "}
+                  <span className="font-medium text-slate-900">
+                    {applicationToDelete.position}
+                  </span>{" "}
+                  will be permanently removed from your tracker.
+                </p>
+              </div>
+            </div>
+
+            <div className="mt-6 flex flex-col-reverse gap-3 border-t border-slate-200 pt-5 sm:flex-row sm:justify-end">
+              <button
+                type="button"
+                onClick={() => setApplicationToDelete(null)}
+                className="rounded-lg border border-slate-300 bg-white px-4 py-2.5 text-sm font-semibold text-slate-700 transition hover:bg-slate-50 focus:outline-none focus:ring-2 focus:ring-blue-500"
+              >
+                Cancel
+              </button>
+
+              <button
+                type="button"
+                onClick={handleConfirmDelete}
+                className="rounded-lg bg-red-600 px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2"
+              >
+                Delete application
+              </button>
+            </div>
+          </div>
+        )}
       </Modal>
     </>
   );

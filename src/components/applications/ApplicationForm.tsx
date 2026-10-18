@@ -6,6 +6,7 @@ import type {
 } from "../../types/application";
 
 interface ApplicationFormProps {
+  initialApplication?: JobApplication;
   onSubmit: (application: JobApplication) => void;
   onCancel: () => void;
 }
@@ -26,26 +27,45 @@ interface FormErrors {
   dateApplied?: string;
 }
 
-const initialFormData: FormData = {
-  company: "",
-  position: "",
-  location: "",
-  status: "saved",
-  dateApplied: new Date().toISOString().slice(0, 10),
-  jobType: "Full-time",
-};
+function getInitialFormData(
+  initialApplication?: JobApplication,
+): FormData {
+  if (initialApplication) {
+    return {
+      company: initialApplication.company,
+      position: initialApplication.position,
+      location: initialApplication.location,
+      status: initialApplication.status,
+      dateApplied: initialApplication.dateApplied,
+      jobType: initialApplication.jobType,
+    };
+  }
+
+  return {
+    company: "",
+    position: "",
+    location: "",
+    status: "saved",
+    dateApplied: new Date().toISOString().slice(0, 10),
+    jobType: "Full-time",
+  };
+}
 
 const inputClassName =
   "mt-1.5 w-full rounded-lg border border-slate-300 bg-white px-3 py-2.5 text-sm text-slate-900 outline-none transition placeholder:text-slate-400 focus:border-blue-500 focus:ring-2 focus:ring-blue-100";
 
 function ApplicationForm({
+  initialApplication,
   onSubmit,
   onCancel,
 }: ApplicationFormProps) {
-  const [formData, setFormData] =
-    useState<FormData>(initialFormData);
+  const [formData, setFormData] = useState<FormData>(() =>
+    getInitialFormData(initialApplication),
+  );
 
   const [errors, setErrors] = useState<FormErrors>({});
+
+  const isEditing = Boolean(initialApplication);
 
   function validateForm() {
     const nextErrors: FormErrors = {};
@@ -78,8 +98,8 @@ function ApplicationForm({
       return;
     }
 
-    const newApplication: JobApplication = {
-      id: crypto.randomUUID(),
+    const application: JobApplication = {
+      id: initialApplication?.id ?? crypto.randomUUID(),
       company: formData.company.trim(),
       position: formData.position.trim(),
       location: formData.location.trim(),
@@ -88,7 +108,7 @@ function ApplicationForm({
       jobType: formData.jobType,
     };
 
-    onSubmit(newApplication);
+    onSubmit(application);
   }
 
   return (
@@ -102,16 +122,22 @@ function ApplicationForm({
             Company <span className="text-red-500">*</span>
           </label>
 
-          <input
-            id="company"
-            type="text"
+      *   <input
+            id="company"            type="text"
             value={formData.company}
-            onChange={(event) =>
+            onChange={(event) => {
               setFormData((current) => ({
                 ...current,
                 company: event.target.value,
-              }))
-            }
+              }));
+
+              if (errors.company) {
+                setErrors((current) => ({
+                  ...current,
+                  company: undefined,
+                }));
+              }
+            }}
             placeholder="Example: Microsoft"
             aria-invalid={Boolean(errors.company)}
             aria-describedby={
@@ -142,12 +168,19 @@ function ApplicationForm({
             id="position"
             type="text"
             value={formData.position}
-            onChange={(event) =>
+            onChange={(event) => {
               setFormData((current) => ({
                 ...current,
                 position: event.target.value,
-              }))
-            }
+              }));
+
+              if (errors.position) {
+                setErrors((current) => ({
+                  ...current,
+                  position: undefined,
+                }));
+              }
+            }}
             placeholder="Example: Junior Frontend Developer"
             aria-invalid={Boolean(errors.position)}
             aria-describedby={
@@ -178,12 +211,19 @@ function ApplicationForm({
             id="location"
             type="text"
             value={formData.location}
-            onChange={(event) =>
+            onChange={(event) => {
               setFormData((current) => ({
                 ...current,
                 location: event.target.value,
-              }))
-            }
+              }));
+
+              if (errors.location) {
+                setErrors((current) => ({
+                  ...current,
+                  location: undefined,
+                }));
+              }
+            }}
             placeholder="Example: Remote"
             aria-invalid={Boolean(errors.location)}
             aria-describedby={
@@ -214,12 +254,19 @@ function ApplicationForm({
             id="date-applied"
             type="date"
             value={formData.dateApplied}
-            onChange={(event) =>
+            onChange={(event) => {
               setFormData((current) => ({
                 ...current,
                 dateApplied: event.target.value,
-              }))
-            }
+              }));
+
+              if (errors.dateApplied) {
+                setErrors((current) => ({
+                  ...current,
+                  dateApplied: undefined,
+                }));
+              }
+            }}
             aria-invalid={Boolean(errors.dateApplied)}
             aria-describedby={
               errors.dateApplied
@@ -307,7 +354,7 @@ function ApplicationForm({
           type="submit"
           className="rounded-lg bg-blue-600 px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
         >
-          Save application
+          {isEditing ? "Save changes" : "Save application"}
         </button>
       </div>
     </form>

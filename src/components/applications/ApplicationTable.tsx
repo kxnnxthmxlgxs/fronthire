@@ -1,9 +1,11 @@
-import { ExternalLink, MoreHorizontal } from "lucide-react";
+import { Pencil, Trash2 } from "lucide-react";
 import type { JobApplication } from "../../types/application";
 import StatusBadge from "../dashboard/StatusBadge";
 
 interface ApplicationTableProps {
   applications: JobApplication[];
+  onEdit: (application: JobApplication) => void;
+  onDelete: (application: JobApplication) => void;
 }
 
 const dateFormatter = new Intl.DateTimeFormat("en-ZA", {
@@ -14,6 +16,8 @@ const dateFormatter = new Intl.DateTimeFormat("en-ZA", {
 
 function ApplicationTable({
   applications,
+  onEdit,
+  onDelete,
 }: ApplicationTableProps) {
   if (applications.length === 0) {
     return (
@@ -60,7 +64,7 @@ function ApplicationTable({
               </th>
 
               <th scope="col" className="px-5 py-3 text-right font-medium">
-                <span className="sr-only">Actions</span>
+                Actions
               </th>
             </tr>
           </thead>
@@ -103,10 +107,12 @@ function ApplicationTable({
                   <div className="flex justify-end gap-1">
                     <button
                       type="button"
-                      aria-label={`Open ${application.company} job listing`}
-                      className="rounded-lg p-2 text-slate-500 transition hover:bg-slate-100 hover:text-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      onClick={() => onEdit(application)}
+                      aria-label={`Edit ${application.company} application`}
+                      title="Edit application"
+                      className="rounded-lg p-2 text-slate-500 transition hover:bg-blue-50 hover:text-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
                     >
-                      <ExternalLink
+                      <Pencil
                         aria-hidden="true"
                         className="h-4 w-4"
                       />
@@ -114,10 +120,12 @@ function ApplicationTable({
 
                     <button
                       type="button"
-                      aria-label={`More actions for ${application.company}`}
-                      className="rounded-lg p-2 text-slate-500 transition hover:bg-slate-100 hover:text-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      onClick={() => onDelete(application)}
+                      aria-label={`Delete ${application.company} application`}
+                      title="Delete application"
+                      className="rounded-lg p-2 text-slate-500 transition hover:bg-red-50 hover:text-red-700 focus:outline-none focus:ring-2 focus:ring-red-500"
                     >
-                      <MoreHorizontal
+                      <Trash2
                         aria-hidden="true"
                         className="h-4 w-4"
                       />
