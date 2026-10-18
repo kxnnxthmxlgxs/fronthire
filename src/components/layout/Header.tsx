@@ -1,8 +1,21 @@
-import { Bell, Search } from "lucide-react";
+import { Bell, Menu, Search } from "lucide-react";
 
-function Header() {
+interface HeaderProps {
+  onMenuOpen: () => void;
+}
+
+function Header({ onMenuOpen }: HeaderProps) {
   return (
-    <header className="flex h-16 items-center justify-between border-b border-slate-200 bg-white px-4 sm:px-6">
+    <header className="flex h-16 items-center gap-3 border-b border-slate-200 bg-white px-4 sm:px-6">
+      <button
+        type="button"
+        onClick={onMenuOpen}
+        aria-label="Open navigation menu"
+        className="rounded-lg p-2 text-slate-600 transition hover:bg-slate-100 hover:text-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-500 md:hidden"
+      >
+        <Menu aria-hidden="true" className="h-5 w-5" />
+      </button>
+
       <div className="relative hidden w-full max-w-md sm:block">
         <Search
           aria-hidden="true"
