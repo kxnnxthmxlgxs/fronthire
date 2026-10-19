@@ -1,6 +1,7 @@
 import { useState, type FormEvent } from "react";
 import type {
   ApplicationStatus,
+  InterviewFormat,
   JobApplication,
   JobType,
 } from "../../types/application";
@@ -18,6 +19,11 @@ interface FormData {
   status: ApplicationStatus;
   dateApplied: string;
   jobType: JobType;
+  interviewDate: string;
+  interviewTime: string;
+  interviewFormat: InterviewFormat;
+  meetingLink: string;
+  interviewNotes: string;
 }
 
 interface FormErrors {
@@ -38,6 +44,12 @@ function getInitialFormData(
       status: initialApplication.status,
       dateApplied: initialApplication.dateApplied,
       jobType: initialApplication.jobType,
+      interviewDate: initialApplication.interviewDate ?? "",
+      interviewTime: initialApplication.interviewTime ?? "",
+      interviewFormat:
+        initialApplication.interviewFormat ?? "Online",
+      meetingLink: initialApplication.meetingLink ?? "",
+      interviewNotes: initialApplication.interviewNotes ?? "",
     };
   }
 
@@ -48,6 +60,11 @@ function getInitialFormData(
     status: "saved",
     dateApplied: new Date().toISOString().slice(0, 10),
     jobType: "Full-time",
+    interviewDate: "",
+    interviewTime: "",
+    interviewFormat: "Online",
+    meetingLink: "",
+    interviewNotes: "",
   };
 }
 
@@ -99,14 +116,36 @@ function ApplicationForm({
     }
 
     const application: JobApplication = {
-      id: initialApplication?.id ?? crypto.randomUUID(),
-      company: formData.company.trim(),
-      position: formData.position.trim(),
-      location: formData.location.trim(),
-      status: formData.status,
-      dateApplied: formData.dateApplied,
-      jobType: formData.jobType,
-    };
+  id: initialApplication?.id ?? crypto.randomUUID(),
+  company: formData.company.trim(),
+  position: formData.position.trim(),
+  location: formData.location.trim(),
+  status: formData.status,
+  dateApplied: formData.dateApplied,
+  jobType: formData.jobType,
+  interviewDate:
+    formData.status === "interview" && formData.interviewDate
+      ? formData.interviewDate
+      : undefined,
+  interviewTime:
+    formData.status === "interview" && formData.interviewTime
+      ? formData.interviewTime
+      : undefined,
+  interviewFormat:
+    formData.status === "interview"
+      ? formData.interviewFormat
+      : undefined,
+  meetingLink:
+    formData.status === "interview" &&
+    formData.meetingLink.trim()
+      ? formData.meetingLink.trim()
+      : undefined,
+  interviewNotes:
+    formData.status === "interview" &&
+    formData.interviewNotes.trim()
+      ? formData.interviewNotes.trim()
+      : undefined,
+};
 
     onSubmit(application);
   }
@@ -340,6 +379,138 @@ function ApplicationForm({
           </select>
         </div>
       </div>
+
+
+      {formData.status === "interview" && (
+  <fieldset className="mt-6 rounded-xl border border-blue-200 bg-blue-50/50 p-5">
+    <legend className="px-2 text-sm font-semibold text-blue-900">
+      Interview details
+    </legend>
+
+    <p className="mb-5 text-sm text-blue-800">
+      Add the schedule and preparation information for this interview.
+    </p>
+
+    <div className="grid gap-5 sm:grid-cols-2">
+      <div>
+        <label
+          htmlFor="interview-date"
+          className="text-sm font-medium text-slate-700"
+        >
+          Interview date
+        </label>
+
+        <input
+          id="interview-date"
+          type="date"
+          value={formData.interviewDate}
+          onChange={(event) =>
+            setFormData((current) => ({
+              ...current,
+              interviewDate: event.target.value,
+            }))
+          }
+          className={inputClassName}
+        />
+      </div>
+
+      <div>
+        <label
+          htmlFor="interview-time"
+          className="text-sm font-medium text-slate-700"
+        >
+          Interview time
+        </label>
+
+        <input
+          id="interview-time"
+          type="time"
+          value={formData.interviewTime}
+          onChange={(event) =>
+            setFormData((current) => ({
+              ...current,
+              interviewTime: event.target.value,
+            }))
+          }
+          className={inputClassName}
+        />
+      </div>
+
+      <div>
+        <label
+          htmlFor="interview-format"
+          className="text-sm font-medium text-slate-700"
+        >
+          Interview format
+        </label>
+
+        <select
+          id="interview-format"
+          value={formData.interviewFormat}
+          onChange={(event) =>
+            setFormData((current) => ({
+              ...current,
+              interviewFormat:
+                event.target.value as InterviewFormat,
+            }))
+          }
+          className={inputClassName}
+        >
+          <option value="Online">Online</option>
+          <option value="Phone">Phone</option>
+          <option value="In-person">In-person</option>
+        </select>
+      </div>
+
+      <div>
+        <label
+          htmlFor="meeting-link"
+          className="text-sm font-medium text-slate-700"
+        >
+          Meeting link
+        </label>
+
+        <input
+          id="meeting-link"
+          type="url"
+          value={formData.meetingLink}
+          onChange={(event) =>
+            setFormData((current) => ({
+              ...current,
+              meetingLink: event.target.value,
+            }))
+          }
+          placeholder="https://teams.microsoft.com/..."
+          className={inputClassName}
+        />
+      </div>
+
+      <div className="sm:col-span-2">
+        <label
+          htmlFor="interview-notes"
+          className="text-sm font-medium text-slate-700"
+        >
+          Preparation notes
+        </label>
+
+        <textarea
+          id="interview-notes"
+          rows={4}
+          value={formData.interviewNotes}
+          onChange={(event) =>
+            setFormData((current) => ({
+              ...current,
+              interviewNotes: event.target.value,
+            }))
+          }
+          placeholder="Topics to review, people attending, questions to ask..."
+          className={inputClassName}
+        />
+      </div>
+    </div>
+  </fieldset>
+)}
+
 
       <div className="mt-6 flex flex-col-reverse gap-3 border-t border-slate-200 pt-5 sm:flex-row sm:justify-end">
         <button

@@ -12,6 +12,11 @@ export type JobType =
   | "Contract"
   | "Internship";
 
+export type InterviewFormat =
+  | "Online"
+  | "Phone"
+  | "In-person";
+
 export interface JobApplication {
   id: string;
   company: string;
@@ -20,4 +25,9 @@ export interface JobApplication {
   status: ApplicationStatus;
   dateApplied: string;
   jobType: JobType;
+  interviewDate?: string;
+  interviewTime?: string;
+  interviewFormat?: InterviewFormat;
+  meetingLink?: string;
+  interviewNotes?: string;
 }
