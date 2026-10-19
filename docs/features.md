@@ -92,7 +92,7 @@ When the form's status is `interview` (or when the user chooses to add interview
 The Interviews page shows counts of applications that carry interview details, split by status and format, derived from shared application state.
 
 ### Interview cards
-`src/components/interviews/InterviewCard.tsx` renders one card per application that has at least one interview field set. Each card displays:
+The Interviews page (src/pages/InterviewsPage.tsx) lists applications whose status is interview and which have at least one of interviewDate, interviewTime, interviewFormat, meetingLink, or interviewNotes set. Each matching application is rendered by src/components/interviews/InterviewCard.tsx. The card displays:
 
 - Position, company, and location
 - Interview date (formatted with `toLocaleDateString('en-ZA', { weekday, year, month, day })`)

@@ -1,3 +1,5 @@
+// src/pages/InterviewsPage.tsx
+
 import {
   CalendarDays,
   Monitor,
@@ -9,7 +11,40 @@ import StatCard from "../components/dashboard/StatCard";
 import InterviewCard from "../components/interviews/InterviewCard";
 import InterviewEmptyState from "../components/interviews/InterviewEmptyState";
 import { useApplications } from "../hooks/useApplications";
+import type { JobApplication } from "../types/application";
 
+function hasInterviewDetails(application: JobApplication): boolean {
+  return Boolean(
+    application.interviewDate ||
+      application.interviewTime ||
+      application.interviewFormat ||
+      application.meetingLink ||
+      application.interviewNotes,
+  );
+}
+
+function compareByInterviewDate(
+  firstApplication: JobApplication,
+  secondApplication: JobApplication,
+): number {
+  const firstDate = firstApplication.interviewDate;
+  const secondDate = secondApplication.interviewDate;
+
+  // Applications without a date sort after applications with a date.
+  if (!firstDate && !secondDate) {
+    return 0;
+  }
+
+  if (!firstDate) {
+    return 1;
+  }
+
+  if (!secondDate) {
+    return -1;
+  }
+
+  return firstDate.localeCompare(secondDate);
+}
 
 function InterviewsPage() {
   const { applications } = useApplications();
@@ -18,21 +53,11 @@ function InterviewsPage() {
     () =>
       applications
         .filter(
-          (application) => application.status === "interview",
+          (application) =>
+            application.status === "interview" &&
+            hasInterviewDetails(application),
         )
-        .sort((firstApplication, secondApplication) => {
-          if (!firstApplication.interviewDate) {
-            return 1;
-          }
-
-          if (!secondApplication.interviewDate) {
-            return -1;
-          }
-
-          return firstApplication.interviewDate.localeCompare(
-            secondApplication.interviewDate,
-          );
-        }),
+        .sort(compareByInterviewDate),
     [applications],
   );
 
